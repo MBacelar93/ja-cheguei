@@ -1,0 +1,43 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Banco de dados local
+*.sqlite
+*.sqlite3
+*.db
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Pasta de build / cobertura
+dist/
+build/
+coverage/
+
+# Arquivos temporários
+tmp/
+temp/
+
+# Configurações de editor/IDE
+.vscode/
+.idea/
+
+# Arquivos de cache
+.cache/
+.parcel-cache/
+
+# Arquivos do sistema operacional
+desktop.ini
