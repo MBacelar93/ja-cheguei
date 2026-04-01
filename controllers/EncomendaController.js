@@ -4,7 +4,7 @@ import Encomenda from '../models/Encomenda.js';
 import Log from '../models/Log.js';
 
 class EncomendaController {
-    static async criar(re, res) {
+    static async criar(req, res) {
         try {
             const { remetente, apartamento, bloco, tipo, numero, observacoes } = req.body;
 
@@ -53,6 +53,30 @@ class EncomendaController {
         }
     }
 
+    static async listar(req, res) {
+        try {
+            const { status, dias } = req.query;
+            const filtros = {};
+            if (dias) filtros.dias = dias;
+
+            const encomendas = await Encomenda.listarTodas(req.db, filtros);
+
+            return res.status(200).json({
+                sucesso: true,
+                total: encomendas.length,
+                encomendas
+            });
+        } catch (erro) {
+            console.error('❌ Erro em listar:', erro.message);
+
+            return res.status(500).json({
+                sucesso: false,
+                erro: erro.message
+            });
+        }
+
+
+    }
 
     static async buscarPorId(req, res) {
         try {
