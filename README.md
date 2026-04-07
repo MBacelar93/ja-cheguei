@@ -445,7 +445,7 @@ MIT License - sinta-se livre para usar, modificar e distribuir!
 Feito para facilitar a vida de porteiros e moradores em condomínios.
 
 **Versão:** 1.0.0  
-**Última atualização:** Abril 2025  
+**Última atualização:** Abril 2026  
 **Suporte:** Para bugs ou sugestões, abra uma issue no repositório.
 
 ---
