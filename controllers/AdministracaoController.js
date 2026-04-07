@@ -1,6 +1,6 @@
-import Encomenda from '../models/Encomenda';
-import Morador from '../models/Morador';
-import Log from '../models/Log';
+import Encomenda from '../models/Encomenda.js';
+import Morador from '../models/Morador.js';
+import Log from '../models/Log.js';
 
 class AdminController {
     static async getDashboard(req, res) {

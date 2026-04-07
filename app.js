@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname,'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 const db = new Database();
@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/encomenda', encomendaRoutes);
-app.use('/api/admin', moradorRoutes);
+app.use('/api/morador', moradorRoutes);
 app.use('/api/admin', administracaoRoutes);
 
 app.get('/api/status', (req, res) => {

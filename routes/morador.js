@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import MoradorController from '../controllers/MoradorController';
+import MoradorController from '../controllers/MoradorController.js';
 
 const router = Router();
 
