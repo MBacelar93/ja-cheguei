@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'chave-prd';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_chave_prd';
+const JWT_SECRET = process.env.JWT_SECRET || 'sua-chave-secreta-super-segura-mude-em-producao';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'sua-chave-refresh-super-segura-mude-em-producao';
 
 export function verifyToken(req, res, next) {
     try {
