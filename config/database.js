@@ -61,6 +61,77 @@ class Database {
             FOREIGN KEY(morador_id) REFERENCES moradores(id)
             );
         `);
+
+      
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS roles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL UNIQUE,
+        descricao TEXT,
+        data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+ 
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS permissoes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL UNIQUE,
+        descricao TEXT,
+        data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+   
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT NOT NULL UNIQUE,
+        senha_hash TEXT NOT NULL,
+        nome TEXT NOT NULL,
+        ativo INTEGER DEFAULT 1,
+        data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+        ultimo_login DATETIME
+      )
+    `);
+
+    
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS user_roles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario_id INTEGER NOT NULL,
+        role_id INTEGER NOT NULL,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+        FOREIGN KEY (role_id) REFERENCES roles(id),
+        UNIQUE(usuario_id, role_id)
+      )
+    `);
+
+    
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario_id INTEGER,
+        acao TEXT NOT NULL,
+        detalhes TEXT,
+        ip TEXT,
+        data DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+      )
+    `);
+
+   
+    try {
+      const roles = ['Porteiro', 'Administração', 'Admin do Sistema'];
+      roles.forEach(role => {
+        this.db.exec(`
+          INSERT OR IGNORE INTO roles (nome, descricao) 
+          VALUES ('${role}', 'Role: ${role}')
+        `);
+      });
+    } catch (e) {
+     
+    }
         
         this.db.run(`
             CREATE TABLE IF NOT EXISTS logs (

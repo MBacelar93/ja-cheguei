@@ -1,26 +1,134 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ App iniciado');
+/**
+ * ========================================
+ * PUBLIC/JS/APP.JS
+ * ========================================
+ * 
+ * Lógica principal da aplicação
+ * Com verificação de autenticação
+ */
+
+let usuarioLogado = null;
+
+// ========== INICIALIZAÇÃO ==========
+
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('✅ App.js iniciado');
+    
+    // 1. Verificar autenticação
+    await verificarAutenticacao();
+    
+    // 2. Se não autenticado, redirecionar
+    if (!usuarioLogado) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    // 3. Carregar dados do usuário
+    atualizarNavbar();
+    
+    // 4. Configurar event listeners
     document.getElementById('form-cadastro').addEventListener('submit', handleCadastro);
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    
+    // 5. Carregar dashboard admin se for admin
+    if (usuarioLogado.role === 'Administração' || usuarioLogado.role === 'Admin do Sistema') {
+        document.getElementById('adminBtn').style.display = 'block';
+    }
 });
+
+// ========== VERIFICAR AUTENTICAÇÃO ==========
+
+async function verificarAutenticacao() {
+    try {
+        const response = await fetch('http://localhost:3000/api/auth/me', {
+            method: 'GET',
+            credentials: 'include',  // ← ESSENCIAL! Envia cookies
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            usuarioLogado = data.usuario;
+            console.log('✅ Autenticado como:', usuarioLogado.nome);
+            return true;
+        } else {
+            console.log('❌ Token não válido, status:', response.status);
+            usuarioLogado = null;
+            return false;
+        }
+    } catch (erro) {
+        console.error('❌ Erro ao verificar autenticação:', erro);
+        usuarioLogado = null;
+        return false;
+    }
+}
+
+// ========== ATUALIZAR NAVBAR ==========
+
+function atualizarNavbar() {
+    const userDisplay = document.getElementById('userDisplay');
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    if (usuarioLogado) {
+        userDisplay.textContent = `👤 ${usuarioLogado.nome} (${usuarioLogado.role})`;
+        logoutBtn.style.display = 'inline-block';
+    } else {
+        userDisplay.textContent = 'Não autenticado';
+        logoutBtn.style.display = 'none';
+    }
+}
+
+// ========== LOGOUT ==========
+
+async function handleLogout() {
+    if (!confirm('Tem certeza que deseja sair?')) {
+        return;
+    }
+
+    try {
+        await fetch('http://localhost:3000/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+    } catch (erro) {
+        console.error('Erro ao fazer logout:', erro);
+    }
+
+    // Limpar storage
+    localStorage.removeItem('ja_cheguei_usuario');
+    
+    // Redirecionar para login
+    window.location.href = '/login';
+}
 
 // ========== GERENCIAMENTO DE ABAS ==========
 
 function showTab(tabName) {
+    // Ocultar todas as abas
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
 
+    // Remover active dos botões
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
 
+    // Mostrar aba selecionada
     const tabElement = document.getElementById(`${tabName}-tab`);
     if (tabElement) {
         tabElement.classList.add('active');
     }
 
+    // Marcar botão como active
     event.target.classList.add('active');
 
+    // Ações específicas por aba
     switch(tabName) {
         case 'listar':
             atualizarLista();
@@ -41,6 +149,7 @@ async function handleCadastro(event) {
     const formData = new FormData(event.target);
     const dados = Object.fromEntries(formData);
 
+    // Remover campos vazios
     Object.keys(dados).forEach(chave => {
         if (!dados[chave]) delete dados[chave];
     });
@@ -408,6 +517,31 @@ async function confirmarRetirada() {
     }
 }
 
+// ========== MENSAGENS ==========
+
+function mostrarMensagem(elementId, tipo, mensagem) {
+    const elemento = document.getElementById(elementId);
+    if (!elemento) return;
+
+    elemento.textContent = mensagem;
+    elemento.className = `message ${tipo}`;
+    elemento.style.display = 'block';
+
+    if (tipo !== 'error') {
+        setTimeout(() => {
+            limparMensagem(elementId);
+        }, 5000);
+    }
+}
+
+function limparMensagem(elementId) {
+    const elemento = document.getElementById(elementId);
+    if (elemento) {
+        elemento.style.display = 'none';
+        elemento.textContent = '';
+    }
+}
+
 // ========== ESTILOS DINÂMICOS ==========
 
 const style = document.createElement('style');
@@ -415,6 +549,103 @@ style.textContent = `
     .btn-sm {
         padding: 0.5rem 0.75rem;
         font-size: 0.85rem;
+    }
+
+    .navbar {
+        background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+        color: white;
+        padding: 1rem 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .navbar-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .navbar-brand h1 {
+        margin: 0;
+        font-size: 24px;
+    }
+
+    .navbar-brand p {
+        margin: 4px 0 0 0;
+        font-size: 12px;
+        opacity: 0.9;
+    }
+
+    .navbar-user {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .stat-card h4 {
+        margin: 0 0 0.5rem 0;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .stat-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #1a73e8;
+        margin: 0;
+    }
+
+    .admin-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .search-section {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .search-section h3 {
+        margin-bottom: 1rem;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 1rem;
     }
 `;
 document.head.appendChild(style);

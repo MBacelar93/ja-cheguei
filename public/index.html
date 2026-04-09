@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Já Cheguei - Sistema de Encomendas</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <title>📦 Já Cheguei - Sistema de Encomendas</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <!-- ========== NAVBAR ========== -->
@@ -14,392 +14,263 @@
                 <h1>📦 Já Cheguei</h1>
                 <p>Sistema de Gerenciamento de Encomendas</p>
             </div>
-            <div class="navbar-links">
-                <button class="nav-btn active" onclick="showTab('cadastro')">
-                    ➕ Cadastrar
-                </button>
-                <button class="nav-btn" onclick="showTab('listar')">
-                    📋 Listar
-                </button>
-                <button class="nav-btn" onclick="showTab('buscar')">
-                    🔍 Buscar
-                </button>
-                <button class="nav-btn" onclick="showTab('admin')">
-                    ⚙️ Admin
+
+            <div class="navbar-user">
+                <span id="userDisplay">Carregando...</span>
+                <button id="logoutBtn" class="btn btn-danger btn-sm" style="display: none;">
+                    🚪 Logout
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- ========== MAIN CONTAINER ========== -->
-    <main class="main-container">
-        <!-- ========== TAB: CADASTRO ========== -->
-        <section id="cadastro-tab" class="tab-content active">
-            <div class="card">
-                <h2>📦 Cadastrar Nova Encomenda</h2>
-                <p class="subtitle">Preencha os dados da encomenda recebida</p>
+    <!-- ========== CONTAINER PRINCIPAL ========== -->
+    <div class="container">
+        <!-- ========== ABAS ========== -->
+        <div class="tabs">
+            <button class="nav-btn active" onclick="showTab('cadastro')">
+                ➕ Cadastrar
+            </button>
+            <button class="nav-btn" onclick="showTab('listar')">
+                📋 Listar
+            </button>
+            <button class="nav-btn" onclick="showTab('buscar')">
+                🔍 Buscar
+            </button>
+            <button class="nav-btn" id="adminBtn" style="display: none;" onclick="showTab('admin')">
+                ⚙️ Admin
+            </button>
+        </div>
 
-                <form id="form-cadastro" class="form-grid">
-                    <!-- Remetente -->
+        <!-- ========== CONTEÚDO DAS ABAS ========== -->
+
+        <!-- TAB: CADASTRO -->
+        <div id="cadastro-tab" class="tab-content active">
+            <h2>➕ Cadastrar Encomenda</h2>
+            <div id="cadastro-message" class="message"></div>
+
+            <form id="form-cadastro">
+                <div class="form-group">
+                    <label for="remetente">Remetente *</label>
+                    <input type="text" id="remetente" name="remetente" required placeholder="Amazon, Correios, etc">
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
-                        <label for="remetente">
-                            Remetente <span class="required">*</span>
-                        </label>
-                        <input 
-                            type="text" 
-                            id="remetente" 
-                            name="remetente"
-                            placeholder="Ex: Amazon, Correios, etc"
-                            required
-                        >
-                        <small class="hint">Nome de quem está enviando</small>
+                        <label for="apartamento">Apartamento *</label>
+                        <input type="text" id="apartamento" name="apartamento" required placeholder="402">
                     </div>
-
-                    <!-- Apartamento -->
                     <div class="form-group">
-                        <label for="apartamento">
-                            Apartamento <span class="required">*</span>
-                        </label>
-                        <input 
-                            type="text" 
-                            id="apartamento" 
-                            name="apartamento"
-                            placeholder="Ex: 402"
-                            required
-                        >
-                        <small class="hint">Número do apto</small>
+                        <label for="bloco">Bloco *</label>
+                        <input type="text" id="bloco" name="bloco" required placeholder="A">
                     </div>
+                </div>
 
-                    <!-- Bloco -->
-                    <div class="form-group">
-                        <label for="bloco">
-                            Bloco <span class="required">*</span>
-                        </label>
-                        <input 
-                            type="text" 
-                            id="bloco" 
-                            name="bloco"
-                            placeholder="Ex: A, B, 1, 2"
-                            required
-                        >
-                        <small class="hint">Bloco/Prédio</small>
-                    </div>
+                <div class="form-group">
+                    <label for="tipo">Tipo</label>
+                    <select id="tipo" name="tipo">
+                        <option value="">Selecione...</option>
+                        <option value="pacote">Pacote</option>
+                        <option value="carta">Carta</option>
+                        <option value="documento">Documento</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
 
-                    <!-- Tipo -->
-                    <div class="form-group">
-                        <label for="tipo">
-                            Tipo
-                        </label>
-                        <select id="tipo" name="tipo">
-                            <option value="">Selecionar...</option>
-                            <option value="pacote">Pacote</option>
-                            <option value="carta">Carta</option>
-                            <option value="documento">Documento</option>
-                            <option value="caixa">Caixa</option>
-                        </select>
-                        <small class="hint">Tipo de encomenda (opcional)</small>
-                    </div>
+                <div class="form-group">
+                    <label for="numero">Número/Rastreio</label>
+                    <input type="text" id="numero" name="numero" placeholder="BR123456789">
+                </div>
 
-                    <!-- Número de Rastreamento -->
-                    <div class="form-group">
-                        <label for="numero">
-                            Número/Rastreamento
-                        </label>
-                        <input 
-                            type="text" 
-                            id="numero" 
-                            name="numero"
-                            placeholder="Ex: BR123456789"
-                        >
-                        <small class="hint">Código de rastreamento (opcional)</small>
-                    </div>
+                <div class="form-group">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" name="observacoes" rows="3" placeholder="Quebrado, úmido, etc"></textarea>
+                </div>
 
-                    <!-- Observações -->
-                    <div class="form-group form-full">
-                        <label for="observacoes">
-                            Observações
-                        </label>
-                        <textarea 
-                            id="observacoes" 
-                            name="observacoes"
-                            placeholder="Ex: Quebrado, úmido, etc"
-                            rows="3"
-                        ></textarea>
-                        <small class="hint">Notas adicionais (opcional)</small>
-                    </div>
+                <button type="submit" class="btn btn-primary">
+                    ✅ Cadastrar
+                </button>
+            </form>
+        </div>
 
-                    <!-- Botões -->
-                    <div class="form-actions form-full">
-                        <button type="submit" class="btn btn-primary">
-                            ✅ Cadastrar Encomenda
-                        </button>
-                        <button type="reset" class="btn btn-secondary">
-                            🔄 Limpar
-                        </button>
-                    </div>
-                </form>
+        <!-- TAB: LISTAR -->
+        <div id="listar-tab" class="tab-content">
+            <h2>📋 Listar Encomendas</h2>
+            <div id="listar-message" class="message"></div>
 
-                <!-- Mensagem de Status -->
-                <div id="cadastro-message" class="message" style="display: none;"></div>
+            <div class="filters">
+                <div class="form-group">
+                    <label for="filtro-status">Status</label>
+                    <select id="filtro-status">
+                        <option value="">Todos</option>
+                        <option value="Ativa">Ativa</option>
+                        <option value="Retirada">Retirada</option>
+                        <option value="Pendente validacao">Pendente Validação</option>
+                        <option value="Encaminhada admin">Arquivo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="filtro-dias">Período</label>
+                    <select id="filtro-dias">
+                        <option value="">Todos</option>
+                        <option value="1">Últimas 24h</option>
+                        <option value="7">Últimos 7 dias</option>
+                        <option value="15">Últimos 15 dias</option>
+                    </select>
+                </div>
+
+                <button onclick="atualizarLista()" class="btn btn-secondary">
+                    🔄 Atualizar
+                </button>
             </div>
-        </section>
 
-        <!-- ========== TAB: LISTAR ========== -->
-        <section id="listar-tab" class="tab-content">
-            <div class="card">
-                <h2>📋 Encomendas Cadastradas</h2>
-                <p class="subtitle">Lista de todas as encomendas do sistema</p>
+            <div id="listar-loading" class="loading" style="display: none;">
+                <p>⏳ Carregando...</p>
+            </div>
 
-                <!-- Filtros -->
-                <div class="filters">
-                    <div class="filter-group">
-                        <label for="filtro-status">Status:</label>
-                        <select id="filtro-status" onchange="atualizarLista()">
-                            <option value="">Todas</option>
-                            <option value="Ativa">Ativa</option>
-                            <option value="Retirada">Retirada</option>
-                            <option value="Pendente validacao">Pendente validação</option>
-                            <option value="Encaminhada admin">Encaminhada admin</option>
-                        </select>
+            <div id="listar-info" style="display: none;">
+                <p><strong>Total:</strong> <span id="total-encomendas">0</span> encomendas</p>
+            </div>
+
+            <table id="encomendas-table" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Remetente</th>
+                        <th>Apto/Bloco</th>
+                        <th>Tipo</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7" class="empty">Clique em "Atualizar" para carregar encomendas</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TAB: BUSCAR -->
+        <div id="buscar-tab" class="tab-content">
+            <h2>🔍 Buscar Encomenda</h2>
+            <div id="buscar-message" class="message"></div>
+
+            <div class="search-section">
+                <h3>🔎 Buscar por ID</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="number" id="buscar-id" placeholder="Digite o ID">
                     </div>
-
-                    <div class="filter-group">
-                        <label for="filtro-dias">Há quantos dias:</label>
-                        <select id="filtro-dias" onchange="atualizarLista()">
-                            <option value="">Qualquer data</option>
-                            <option value="1">Últimas 24h</option>
-                            <option value="7">Últimos 7 dias</option>
-                            <option value="15">Últimos 15 dias</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-secondary" onclick="atualizarLista()">
-                        🔄 Atualizar
+                    <button onclick="buscarPorId()" class="btn btn-primary">
+                        Buscar
                     </button>
                 </div>
-
-                <!-- Loading -->
-                <div id="listar-loading" class="loading" style="display: none;">
-                    ⏳ Carregando encomendas...
-                </div>
-
-                <!-- Tabela de Encomendas -->
-                <div class="table-container">
-                    <table id="encomendas-table" class="table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Remetente</th>
-                                <th>Apto/Bloco</th>
-                                <th>Tipo</th>
-                                <th>Status</th>
-                                <th>Data Recebimento</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="7" class="empty">
-                                    Clique em "Atualizar" para carregar encomendas
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Informações -->
-                <div id="listar-info" class="info-box" style="display: none;">
-                    <p>Total: <strong id="total-encomendas">0</strong> encomendas</p>
-                </div>
             </div>
-        </section>
 
-        <!-- ========== TAB: BUSCAR ========== -->
-        <section id="buscar-tab" class="tab-content">
-            <div class="card">
-                <h2>🔍 Buscar Encomenda</h2>
-                <p class="subtitle">Procure uma encomenda por ID ou apartamento</p>
-
-                <div class="search-container">
-                    <!-- Buscar por ID -->
-                    <div class="search-box">
-                        <h3>Buscar por ID</h3>
-                        <div class="search-group">
-                            <input 
-                                type="number" 
-                                id="buscar-id" 
-                                placeholder="Ex: 5"
-                            >
-                            <button 
-                                class="btn btn-primary" 
-                                onclick="buscarPorId()"
-                            >
-                                🔍 Buscar
-                            </button>
-                        </div>
+            <div class="search-section">
+                <h3>🏢 Buscar por Apartamento</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" id="buscar-apto" placeholder="Apto">
                     </div>
-
-                    <!-- Buscar por Apartamento -->
-                    <div class="search-box">
-                        <h3>Buscar por Apartamento</h3>
-                        <div class="search-group">
-                            <input 
-                                type="text" 
-                                id="buscar-apto" 
-                                placeholder="Ex: 402"
-                            >
-                            <input 
-                                type="text" 
-                                id="buscar-bloco" 
-                                placeholder="Ex: A"
-                            >
-                            <button 
-                                class="btn btn-primary" 
-                                onclick="buscarPorApartamento()"
-                            >
-                                🔍 Buscar
-                            </button>
-                        </div>
+                    <div class="form-group">
+                        <input type="text" id="buscar-bloco" placeholder="Bloco">
                     </div>
-                </div>
-
-                <!-- Resultado -->
-                <div id="buscar-resultado" style="display: none;">
-                    <h3>Resultado da Busca</h3>
-                    <div id="resultado-content" class="resultado-box"></div>
-                </div>
-
-                <!-- Mensagem -->
-                <div id="buscar-message" class="message" style="display: none;"></div>
-            </div>
-        </section>
-
-        <!-- ========== TAB: ADMIN ========== -->
-        <section id="admin-tab" class="tab-content">
-            <div class="card">
-                <h2>⚙️ Painel Administrativo</h2>
-                <p class="subtitle">Dashboard e operações avançadas</p>
-
-                <!-- Dashboard -->
-                <div class="dashboard">
-                    <h3>📊 Dashboard</h3>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <h4>Encomendas Ativas</h4>
-                            <p class="stat-number" id="stat-ativas">-</p>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Retiradas</h4>
-                            <p class="stat-number" id="stat-retiradas">-</p>
-                        </div>
-                        <div class="stat-card">
-                            <h4>Pendentes Validação</h4>
-                            <p class="stat-number" id="stat-pendentes">-</p>
-                        </div>
-                        <div class="stat-card">
-                            <h4>No Arquivo</h4>
-                            <p class="stat-number" id="stat-arquivo">-</p>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-secondary" onclick="carregarDashboard()">
-                        🔄 Atualizar Dashboard
+                    <button onclick="buscarPorApartamento()" class="btn btn-primary">
+                        Buscar
                     </button>
                 </div>
-
-                <!-- Operações -->
-                <div class="operations">
-                    <h3>⚡ Operações</h3>
-
-                    <div class="operation-card">
-                        <h4>Rotina de 15 Dias</h4>
-                        <p>Move encomendas com 15+ dias para arquivo</p>
-                        <button 
-                            class="btn btn-warning" 
-                            onclick="executarRotina15Dias()"
-                        >
-                            🚀 Executar Agora
-                        </button>
-                    </div>
-
-                    <div class="operation-card">
-                        <h4>Ver Logs Recentes</h4>
-                        <p>Histórico de ações do sistema</p>
-                        <button 
-                            class="btn btn-secondary" 
-                            onclick="carregarLogs()"
-                        >
-                            📝 Ver Logs
-                        </button>
-                    </div>
-
-                    <div class="operation-card">
-                        <h4>Status do Sistema</h4>
-                        <p>Verificar saúde e conexão do BD</p>
-                        <button 
-                            class="btn btn-secondary" 
-                            onclick="verificarStatus()"
-                        >
-                            🏥 Verificar
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Resultado -->
-                <div id="admin-resultado" style="display: none;">
-                    <div id="admin-content"></div>
-                </div>
-
-                <!-- Mensagem -->
-                <div id="admin-message" class="message" style="display: none;"></div>
             </div>
-        </section>
-    </main>
+
+            <div id="buscar-resultado" style="display: none;">
+                <h3>📊 Resultados:</h3>
+                <div id="resultado-content"></div>
+            </div>
+        </div>
+
+        <!-- TAB: ADMIN -->
+        <div id="admin-tab" class="tab-content">
+            <h2>⚙️ Painel Administrativo</h2>
+            <div id="admin-message" class="message"></div>
+
+            <!-- Dashboard Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>📦 Ativas</h4>
+                    <p id="stat-ativas" class="stat-number">0</p>
+                </div>
+                <div class="stat-card">
+                    <h4>🎉 Retiradas</h4>
+                    <p id="stat-retiradas" class="stat-number">0</p>
+                </div>
+                <div class="stat-card">
+                    <h4>⏳ Pendentes</h4>
+                    <p id="stat-pendentes" class="stat-number">0</p>
+                </div>
+                <div class="stat-card">
+                    <h4>📁 Arquivo</h4>
+                    <p id="stat-arquivo" class="stat-number">0</p>
+                </div>
+            </div>
+
+            <!-- Admin Actions -->
+            <div class="admin-actions">
+                <button onclick="carregarDashboard()" class="btn btn-secondary">
+                    📊 Recarregar Dashboard
+                </button>
+                <button onclick="carregarLogs()" class="btn btn-secondary">
+                    📝 Carregar Logs
+                </button>
+                <button onclick="verificarStatus()" class="btn btn-secondary">
+                    🏥 Verificar Status
+                </button>
+                <button onclick="executarRotina15Dias()" class="btn btn-warning">
+                    ⚡ Rotina 15 Dias
+                </button>
+            </div>
+
+            <div id="admin-resultado" style="display: none;">
+                <div id="admin-content"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- ========== MODAIS ========== -->
-    
-    <!-- Modal: Ver Detalhes -->
+
+    <!-- Modal: Detalhes -->
     <div id="modal-detalhes" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="fecharModal('modal-detalhes')">&times;</button>
-            <h3>📦 Detalhes da Encomenda</h3>
-            <div id="detalhes-content"></div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="fecharModal('modal-detalhes')">
-                    Fechar
-                </button>
+            <div class="modal-header">
+                <h3>📋 Detalhes da Encomenda</h3>
+                <button class="modal-close" onclick="fecharModal('modal-detalhes')">&times;</button>
             </div>
+            <div class="modal-body" id="detalhes-content"></div>
         </div>
     </div>
 
-    <!-- Modal: Marcar Retirada -->
+    <!-- Modal: Retirada -->
     <div id="modal-retirada" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="fecharModal('modal-retirada')">&times;</button>
-            <h3>✅ Confirmar Retirada</h3>
-            <p id="retirada-info"></p>
-            <div class="modal-actions">
-                <button 
-                    class="btn btn-primary" 
-                    onclick="confirmarRetirada()"
-                >
-                    ✅ Confirmar
-                </button>
-                <button 
-                    class="btn btn-secondary" 
-                    onclick="fecharModal('modal-retirada')"
-                >
-                    Cancelar
-                </button>
+            <div class="modal-header">
+                <h3>✅ Confirmar Retirada</h3>
+                <button class="modal-close" onclick="fecharModal('modal-retirada')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="retirada-info"></p>
+                <div class="modal-actions">
+                    <button onclick="confirmarRetirada()" class="btn btn-success">
+                        ✅ Confirmar
+                    </button>
+                    <button onclick="fecharModal('modal-retirada')" class="btn btn-secondary">
+                        ❌ Cancelar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- ========== FOOTER ========== -->
-    <footer class="footer">
-        <p>© 2026 Já Cheguei - Sistema de Gerenciamento de Encomendas</p>
-        <p>Desenvolvido para portarias de condomínios</p>
-    </footer>
 
     <!-- ========== SCRIPTS ========== -->
     <script src="js/api.js"></script>
