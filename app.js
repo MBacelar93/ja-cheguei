@@ -5,6 +5,7 @@ import Database from './config/database.js';
 import encomendaRoutes from './routes/encomenda.js';
 import moradorRoutes from './routes/morador.js';
 import administracaoRoutes from './routes/administracao.js';
+import authRoutes from './routes/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 app.use('/api/encomenda', encomendaRoutes);
 app.use('/api/morador', moradorRoutes);
 app.use('/api/admin', administracaoRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get('/api/status', (req, res) => {
     res.json({
