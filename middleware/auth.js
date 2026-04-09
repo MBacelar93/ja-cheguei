@@ -5,24 +5,31 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'sua-chave-refresh-
 
 export function verifyToken(req, res, next) {
     try {
-        const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
-         if (!roken) {
+       
+        
+        let token = req.cookies.token;
+
+
+        if (!token) {
+            token = req.headers.authorization?.split(' ')[1];
+        }
+
+        if (!token) {
             return res.status(401).json({
                 sucesso: false,
-                erro: 'Token não encontrado',
-                redirect: '/login'
+                erro: 'Token não encontrado'
             });
-         }
+        }
 
-         const decode = jwt.verify(token, JWT_SECRET);
-         req.usuario = decode;
-         next();
-
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        req.usuario = decoded;
+        next();
     } catch (erro) {
+        console.error('❌ Erro ao verificar token:', erro.message);
         return res.status(401).json({
             sucesso: false,
-            erro: 'Token inválido ou expirado',
-            redirect: '/login'
+            erro: 'Token inválido ou expirado'
         });
     }
 }

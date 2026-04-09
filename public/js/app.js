@@ -42,7 +42,7 @@ async function verificarAutenticacao() {
     try {
         const response = await fetch('http://localhost:3000/api/auth/me', {
             method: 'GET',
-            credentials: 'include',
+            credentials: 'include',  // ← ESSENCIAL! Envia cookies
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -54,7 +54,7 @@ async function verificarAutenticacao() {
             console.log('✅ Autenticado como:', usuarioLogado.nome);
             return true;
         } else {
-            console.log('❌ Não autenticado');
+            console.log('❌ Token não válido, status:', response.status);
             usuarioLogado = null;
             return false;
         }

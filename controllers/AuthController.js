@@ -6,128 +6,141 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'sua-chave-refresh-
 
 class AuthController {
     static async login(req, res) {
-        try {
-            const { email, senha } = req.body;
+    try {
+        const { email, senha } = req.body;
 
-            if (!email || !senha) {
-                return res.status(400).json({
-                    sucesso: false,
-                    erro: 'Email e senha são obrigatórios'
-                });
-            }
 
-            const sqlUsuario = `
-                SELECT u.id, u.email, u.nome, u.senha_hash, u.ativo,
-                    GROUP_CONCAT(r.nome) as roles
-                FROM usuarios u
-                LEFT JOIN user_roles ur ON u.id = ur.usuario_id
-                LEFT JOIN roles r ON ur.role_id = r.id
-                WHERE u.email = ?
-                GROUP BY u.id
-            `;
+        if (!email || !senha) {
+            return res.status(400).json({
+                sucesso: false,
+                erro: 'Email e senha são obrigatórios'
+            });
+        }
 
-            const usuario = await req.db.get(sqlUsuario, [email]);
+        const sqlUsuario = `
+            SELECT u.id, u.email, u.nome, u.senha_hash, u.ativo,
+                GROUP_CONCAT(r.nome) as roles
+            FROM usuarios u
+            LEFT JOIN user_roles ur ON u.id = ur.usuario_id
+            LEFT JOIN roles r ON ur.role_id = r.id
+            WHERE u.email = ?
+            GROUP BY u.id
+        `;
 
-            if (!usuario) {
-                return res.status(401).json({
-                    sucesso: false,
-                    erro: 'Email ou senha incorretos'
-                });
-            }
+        const usuario = await req.db.get(sqlUsuario, [email]);
 
-            if (!usuario.ativo) {
-                return res.status(401).json({
-                    sucesso: false,
-                    erro: 'Usuário inativo. Contate o Administrador'
-                });
-            }
+        
 
-            const senhaValida = await bcryptjs.compare(senha, usuario.senha_hash);
+        if (!usuario) {
+            
+            return res.status(401).json({
+                sucesso: false,
+                erro: 'Email ou senha incorretos'
+            });
+        }
 
-            if (!senhaValida) {
-                return res.status(401).json({
-                    sucesso: false,
-                    erro: 'Email ou senha incorretos'
-                });
-            }
+        console.log('✅ Usuário encontrado:', usuario.email);
 
-            const rolesPrincipal = usuario.roles ? usuario.roles.split(',')[0] : 'Porteiro';
+        if (!usuario.ativo) {
+            console.log('❌ Usuário inativo');
+            return res.status(401).json({
+                sucesso: false,
+                erro: 'Usuário inativo. Contate o Administrador'
+            });
+        }
 
-            const accessToken = jwt.sign({
+        const senhaValida = await bcryptjs.compare(senha, usuario.senha_hash);
+
+    
+
+        if (!senhaValida) {
+            console.log('❌ Senha incorreta');
+            return res.status(401).json({
+                sucesso: false,
+                erro: 'Email ou senha incorretos'
+            });
+        }
+
+
+        const rolesPrincipal = usuario.roles ? usuario.roles.split(',')[0] : 'Porteiro';
+
+        const accessToken = jwt.sign({
+            id: usuario.id,
+            email: usuario.email,
+            nome: usuario.nome,
+            role: rolesPrincipal
+        },
+            JWT_SECRET,
+            { expiresIn: '15m' }
+        );
+
+        const refreshToken = jwt.sign(
+            {
+                id: usuario.id,
+                email: usuario.email
+            },
+            JWT_REFRESH_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        const sqlLastLogin = `
+            UPDATE usuarios 
+            SET ultimo_login = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `;
+
+        await req.db.run(sqlLastLogin, [usuario.id]);
+
+        const sqlAudit = `
+            INSERT INTO audit_logs (usuario_id, acao, detalhes, ip)
+            VALUES (?, ?, ?, ?)    
+        `;
+
+        await req.db.run(sqlAudit, [
+            usuario.id,
+            'LOGIN',
+            JSON.stringify({ email: usuario.email }),
+            req.ip
+        ]);
+
+
+        res.cookie('token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 15 * 60 * 1000
+        });
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+
+        return res.status(200).json({
+            sucesso: true,
+            mensagem: 'Login realizado com sucesso',
+            usuario: {
                 id: usuario.id,
                 email: usuario.email,
                 nome: usuario.nome,
                 role: rolesPrincipal
             },
-                JWT_SECRET,
-                { expiresIn: '15m' }
-            );
-            const refreshToken = jwt.sign(
-                {
-                    id: usuario.id,
-                    email: usuario.email
-                },
-                JWT_REFRESH_SECRET,
-                { expiresIn: '7d' }
-            );
-
-            const sqlLastLogin = `
-                UPDATE usuarios 
-                SET ultimo_login = CURRENT_TIMESTAMP
-                WHERE id = ?
-            `;
-
-            await req.db.run(sqlLastLogin, [usuario.id]);
-
-
-            const sqlAudit = `
-                INSERT INTO audit_logs (usuario_id, acao, detalhes, ip)
-                VALUES (?, ?, ?, ?)    
-            `;
-
-            await req.db.run(sqlAudit, [
-                usuario.id,
-                'LOGIN',
-                JSON.stringify({ email: usuario.email }),
-                req.ip
-            ]);
-
-            res.cookie('token', accessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 15 * 60 * 1000
-            });
-
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
-
-            return res.status(200).json({
-                sucesso: true,
-                mensagem: 'Login realizado com sucesso',
-                usuario: {
-                    id: usuario.id,
-                    email: usuario.email,
-                    nome: usuario.nome,
-                    role: rolesPrincipal
-                },
-                tokens: {
-                    accessToken: accessToken,
-                    refreshToken: refreshToken
-                }
-            });
-        } catch (erro) {
-            console.error('❌ Erro em login:', erro);
-            return res.status(500).json({
-                sucesso: false,
-                erro: 'Erro ao fazer login'
-            });
-        }
+            tokens: {
+                accessToken: accessToken,
+                refreshToken: refreshToken
+            }
+        });
+    } catch (erro) {
+        console.error('❌ Erro em login:', erro);
+        return res.status(500).json({
+            sucesso: false,
+            erro: 'Erro ao fazer login'
+        });
     }
+}
 
 
     static async logout(req, res) {
@@ -144,8 +157,8 @@ class AuthController {
                 ]);
             }
 
-            res.clearCookies('token');
-            res.clearCookies('refreshToken');
+            res.clearCookie('token');
+            res.clearCookie('refreshToken');
 
             return res.status(200).json({
                 sucesso: true,

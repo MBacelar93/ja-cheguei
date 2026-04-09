@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -6,6 +9,7 @@ import encomendaRoutes from './routes/encomenda.js';
 import moradorRoutes from './routes/morador.js';
 import administracaoRoutes from './routes/administracao.js';
 import authRoutes from './routes/auth.js';
+import cookieParser from 'cookie-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +19,9 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 
@@ -26,10 +33,19 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/api/encomenda', encomendaRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/morador', moradorRoutes);
 app.use('/api/admin', administracaoRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/encomenda', encomendaRoutes);
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Rota login
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 
 app.get('/api/status', (req, res) => {
     res.json({

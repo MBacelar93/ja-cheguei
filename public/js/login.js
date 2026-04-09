@@ -57,6 +57,8 @@ async function handleLogin(event) {
     const email = emailInput.value.trim();
     const senha = senhaInput.value;
 
+    console.log('📤 Enviando:', { email, senha });
+
     if (!email || !senha) {
         mostrarMensagem('erro', '⚠️ Email e senha são obrigatórios');
         return;
@@ -78,7 +80,7 @@ async function handleLogin(event) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            boby: JSON.stringify({
+            body: JSON.stringify({
                 email: email,
                 senha: senha
             })
