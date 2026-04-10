@@ -285,7 +285,7 @@ class AuthController {
                     email: usuario.email,
                     nome: usuario.nome,
                     ativo: usuario.ativo,
-                    roles: usuario.roles ? usuario.roles.split(',') : []
+                    role: usuario.roles ? usuario.roles.split(',') : []
                 }
             });
         } catch (erro) {

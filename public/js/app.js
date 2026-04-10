@@ -4,7 +4,7 @@
  * ========================================
  * 
  * Lógica principal da aplicação
- * Com verificação de autenticação
+ * Com verificação de autenticação corrigida
  */
 
 let usuarioLogado = null;
@@ -12,27 +12,52 @@ let usuarioLogado = null;
 // ========== INICIALIZAÇÃO ==========
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('✅ App.js iniciado');
+    // FORÇA: ocultar todas as abas de início
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.style.display = 'none';
+        tab.classList.remove('active');
+    });
+    
+    // Mostrar APENAS cadastro-tab no início
+    const cadastroTab = document.getElementById('cadastro-tab');
+    if (cadastroTab) {
+        cadastroTab.style.display = 'block';
+        cadastroTab.classList.add('active');
+    }
     
     // 1. Verificar autenticação
-    await verificarAutenticacao();
+    const autenticado = await verificarAutenticacao();
     
     // 2. Se não autenticado, redirecionar
-    if (!usuarioLogado) {
+    if (!autenticado || !usuarioLogado) {
         window.location.href = '/login';
         return;
     }
     
-    // 3. Carregar dados do usuário
+    // 3. Atualizar navbar
     atualizarNavbar();
     
-    // 4. Configurar event listeners
-    document.getElementById('form-cadastro').addEventListener('submit', handleCadastro);
-    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+    // 4. Verificar se é admin e mostrar aba/botão admin
+    const isAdmin = usuarioLogado.role && 
+                    (usuarioLogado.role.includes('Admin') || 
+                     usuarioLogado.role.includes('Administração'));
     
-    // 5. Carregar dashboard admin se for admin
-    if (usuarioLogado.role === 'Administração' || usuarioLogado.role === 'Admin do Sistema') {
-        document.getElementById('adminBtn').style.display = 'block';
+    if (isAdmin) {
+        const adminBtn = document.getElementById('adminBtn');
+        if (adminBtn) {
+            adminBtn.style.display = 'block';
+        }
+    }
+    
+    // 5. Configurar event listeners
+    const formCadastro = document.getElementById('form-cadastro');
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    if (formCadastro) {
+        formCadastro.addEventListener('submit', handleCadastro);
+    }
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
     }
 });
 
@@ -42,7 +67,7 @@ async function verificarAutenticacao() {
     try {
         const response = await fetch('http://localhost:3000/api/auth/me', {
             method: 'GET',
-            credentials: 'include',  // ← ESSENCIAL! Envia cookies
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -51,15 +76,13 @@ async function verificarAutenticacao() {
         if (response.ok) {
             const data = await response.json();
             usuarioLogado = data.usuario;
-            console.log('✅ Autenticado como:', usuarioLogado.nome);
             return true;
         } else {
-            console.log('❌ Token não válido, status:', response.status);
             usuarioLogado = null;
             return false;
         }
     } catch (erro) {
-        console.error('❌ Erro ao verificar autenticação:', erro);
+        console.error('Erro ao verificar autenticação:', erro);
         usuarioLogado = null;
         return false;
     }
@@ -72,7 +95,10 @@ function atualizarNavbar() {
     const logoutBtn = document.getElementById('logoutBtn');
     
     if (usuarioLogado) {
-        userDisplay.textContent = `👤 ${usuarioLogado.nome} (${usuarioLogado.role})`;
+        const nomeUsuario = usuarioLogado.nome || 'Usuário';
+        const roleUsuario = usuarioLogado.role || 'Sem role';
+        
+        userDisplay.textContent = `👤 ${nomeUsuario} (${roleUsuario})`;
         logoutBtn.style.display = 'inline-block';
     } else {
         userDisplay.textContent = 'Não autenticado';
@@ -109,9 +135,13 @@ async function handleLogout() {
 // ========== GERENCIAMENTO DE ABAS ==========
 
 function showTab(tabName) {
-    // Ocultar todas as abas
+    // Ocultar TODAS as abas com força
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
+        tab.style.display = 'none';
+        tab.style.visibility = 'hidden';
+        tab.style.height = '0';
+        tab.style.overflow = 'hidden';
     });
 
     // Remover active dos botões
@@ -119,14 +149,20 @@ function showTab(tabName) {
         btn.classList.remove('active');
     });
 
-    // Mostrar aba selecionada
+    // Mostrar APENAS a aba selecionada
     const tabElement = document.getElementById(`${tabName}-tab`);
     if (tabElement) {
         tabElement.classList.add('active');
+        tabElement.style.display = 'block';
+        tabElement.style.visibility = 'visible';
+        tabElement.style.height = 'auto';
+        tabElement.style.overflow = 'visible';
     }
 
-    // Marcar botão como active
-    event.target.classList.add('active');
+    // Marcar botão como active (com segurança)
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
 
     // Ações específicas por aba
     switch(tabName) {
@@ -649,5 +685,3 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
-console.log('✅ App.js carregado com sucesso');
